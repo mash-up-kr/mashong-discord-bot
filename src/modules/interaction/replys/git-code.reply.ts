@@ -3,48 +3,42 @@ import { Client, SlashCommandBuilder } from 'discord.js';
 import { DISCORD_CLIENT } from 'src/constant/discord';
 import { Octokit } from '@octokit/rest';
 import { InteractionReply } from './reply';
-import { SetCommand } from 'src/decorator/command.decorator';
+import { Command } from 'src/decorator/command.decorator';
 import DiscordInteraction from 'src/domains/discord/interaction';
 
+@Command(
+    new SlashCommandBuilder()
+        .setName('code')
+        .setDescription('get user git code info')
+        .addStringOption((option) => {
+            return option.setName('user-name').setDescription('name of user').setRequired(true);
+        }),
+)
 @Injectable()
 export class GitCodeReply implements InteractionReply {
-    
     private readonly octokit: Octokit;
     dict = {};
 
     constructor(@Inject(DISCORD_CLIENT) private readonly client: Client) {
         this.octokit = new Octokit();
     }
-    
-    @SetCommand()
-    command() {
-        return new SlashCommandBuilder()
-            .setName('code')
-            .setDescription('get user git code info')
-            .addStringOption((option) => {
-                return option
-                    .setName('user-name')
-                    .setDescription('name of user')
-                    .setRequired(true);
-            });
-    }
 
-    async send(interaction : DiscordInteraction): Promise<any> {
+    async send(interaction: DiscordInteraction): Promise<any> {
         const id = interaction.options.getString('user-name');
 
         const res = await this.octokit.request('GET /users/{id}/repos', {
             id: id,
             headers: {
-                'X-GiHub-Api-Version': '2022-11-28'
-            }
+                'X-GiHub-Api-Version': '2022-11-28',
+            },
         });
 
         for (var i = 0; i < res.data.length; i++) {
             const lan = await this.octokit.request('GET {url}', {
                 url: res.data[i].languages_url,
                 headers: {
-                    'X-GiHub-Api-Version': '2022-11-28'
-                }
+                    'X-GiHub-Api-Version': '2022-11-28',
+                },
             });
 
             for (var key in lan.data) {
@@ -65,9 +59,6 @@ export class GitCodeReply implements InteractionReply {
             return b[1] - a[1];
         });
 
-        return interaction.reply(
-            `${id} ´ÔÀÌ °¡Àå ¸¹ÀÌ »ç¿ëÇÑ ¾ð¾î´Â ${sortable[0].key} ÀÔ´Ï´Ù.`
-        );
+        return interaction.reply(`${id} ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ${sortable[0].key} ï¿½Ô´Ï´ï¿½.`);
     }
 }
-

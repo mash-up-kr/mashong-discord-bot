@@ -4,9 +4,20 @@ import { DISCORD_CLIENT } from 'src/constant/discord';
 import { Octokit } from '@octokit/rest';
 import { setTimeout } from 'timers/promises';
 import DiscordInteraction from '../../../domains/discord/interaction';
-import { SetCommand } from 'src/decorator/command.decorator';
+import { Command } from 'src/decorator/command.decorator';
 import { InteractionReply } from './reply';
 
+@Command(
+    new SlashCommandBuilder()
+        .setName('git-repo-contributions')
+        .setDescription('get user git repository contributions')
+        .addStringOption((option) => {
+            return option
+                .setName('repo-url')
+                .setDescription('name of repository')
+                .setRequired(true);
+        }),
+)
 @Injectable()
 export class GitRepoContributionsReply implements InteractionReply {
     private readonly MAX_ATTEMPTS = 12;
@@ -14,19 +25,6 @@ export class GitRepoContributionsReply implements InteractionReply {
     constructor(@Inject(DISCORD_CLIENT) private readonly client: Client) {
         // TODO: 밖에서 주입해주도록 수정
         this.octokit = new Octokit();
-    }
-
-    @SetCommand()
-    command() {
-        return new SlashCommandBuilder()
-            .setName('git-repo-contributions')
-            .setDescription('get user git repository contributions')
-            .addStringOption((option) => {
-                return option
-                    .setName('repo-url')
-                    .setDescription('name of repository')
-                    .setRequired(true);
-            });
     }
 
     private parseParam(interaction: DiscordInteraction) {
