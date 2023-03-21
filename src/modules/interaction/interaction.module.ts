@@ -9,9 +9,21 @@ import { GptReply } from './replys/gpt.reply';
 import { RankReply } from './replys/rank.reply';
 import { GitCodeReply } from './replys/git-code.reply';
 import { DiscoveryModule } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
+import { GitMemberModel, GitMemberSchema } from 'src/mongo/schemas/git-member.schema';
 
 @Module({
-    imports: [DiscordClientModule, HttpModule, DiscoveryModule],
+    imports: [
+        DiscordClientModule,
+        HttpModule,
+        DiscoveryModule,
+        MongooseModule.forFeature([
+            {
+                name: GitMemberModel.name,
+                schema: GitMemberSchema,
+            },
+        ]),
+    ],
     providers: [
         PingReply,
         GitPingReply,

@@ -33,7 +33,6 @@ export class DiscordService implements OnModuleInit {
         private readonly discoveryService: DiscoveryService,
         private readonly metadataScanner: MetadataScanner,
         private readonly reflector: Reflector,
-        private readonly configService: ConfigService,
         private readonly messageReplyFactory: MessageReplyFactory,
         private readonly interactionReplyFactory: InteractionReplyFactory,
 
@@ -41,7 +40,7 @@ export class DiscordService implements OnModuleInit {
         private discordMessageModel: Model<DiscordMessageDocument>,
         @InjectModel(DiscordInteractionModel.name)
         private discordInteractionModel: Model<DiscordInteractionDocument>,
-    ) { }
+    ) {}
 
     async onModuleInit() {
         /** 연결 이벤트 등록 */

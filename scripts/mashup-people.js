@@ -7,28 +7,15 @@ const { writeFileSync } = require('fs');
  */
 
 async function getPeopleGithubIds(page = 1) {
-    const response = await axios.get(`https://github.com/orgs/mash-up-kr/people?page=${page}`);
-    const html = response.data;
-
-    const $ = load(html);
-
-    const githubIds = $('#org-members-table > ul > li')
-        .map((i, el) => {
-            const [name, id] = $(el)
-                .children('div.py-3.css-truncate.pl-3.flex-auto')
-                .text()
-                .trim()
-                .split('\n')
-                .map((value) => value.trim());
-
-            if (id) {
-                return id;
-            }
-
-            return name;
-        })
-        .toArray();
-
+    const response = await axios.get(
+        `https://api.github.com/orgs/mash-up-kr/members?page=${page}`,
+        {
+            headers: {
+                Authorization: `token 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`,
+            },
+        },
+    );
+    const githubIds = response.data.map((user) => user.login);
     return githubIds;
 }
 
@@ -37,7 +24,7 @@ async function run() {
         const ids = [];
         const pageLength = 8;
 
-        for (let i = 3; i <= pageLength; i++) {
+        for (let i = 1; i <= pageLength; i++) {
             const _ids = await getPeopleGithubIds(i);
             ids.push(..._ids);
         }

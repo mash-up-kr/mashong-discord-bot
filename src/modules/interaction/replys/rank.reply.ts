@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { SlashCommandBuilder } from 'discord.js';
-import { readFileSync } from 'fs';
 
 import DiscordInteraction from 'src/domains/discord/interaction';
 import { SetCommand } from 'src/decorator/command.decorator';
@@ -9,6 +8,9 @@ import { InteractionReply } from './reply';
 import { ConfigService } from '@nestjs/config';
 import { Time } from 'src/common/time';
 import { Cache } from 'cache-manager';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { GitMemberDocument, GitMemberModel } from 'src/mongo/schemas/git-member.schema';
 
 type GithubEvent = {
     id: number;
@@ -24,10 +26,13 @@ type GithubEvent = {
 @Injectable()
 export class RankReply implements InteractionReply {
     cacheKey = 'MOST_COMMITER';
+    ttl = 1000 * 60 * 10;
     constructor(
         private readonly httpService: HttpService,
         private readonly configService: ConfigService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+        @InjectModel(GitMemberModel.name)
+        private gitMemberModel: Model<GitMemberDocument>,
     ) {}
 
     @SetCommand()
@@ -43,20 +48,26 @@ export class RankReply implements InteractionReply {
             return interaction.reply(this.successResponse(cachedResult));
         }
 
-        // @todo db에 저장해서 읽어오도록 바꾸기
-        const githubIds = readFileSync('./scripts/output/ids.txt', { encoding: 'utf-8' }).split(
-            '\n',
-        );
+        const mostCommiter = await this.getMostCommiter();
+        await this.cacheManager.set(this.cacheKey, mostCommiter, this.ttl);
+
+        await interaction.reply(this.successResponse(mostCommiter));
+    }
+
+    async getMostCommiter(githubIds?: string[]): Promise<string> {
+        if (!githubIds) {
+            const members = await this.gitMemberModel.find();
+            githubIds = members.map((member) => member.githubId);
+        }
 
         const eventsByUsers = await Promise.all(
-            githubIds.map(async (githubId) => this.getGithubEventOfUser(githubId)),
+            githubIds.map(async (githubId) => await this.getGithubEventOfUser(githubId)),
         );
 
         const mostCommiterIndex = this.getMostCommiterIndex(eventsByUsers);
         const mostCommiter = githubIds[mostCommiterIndex];
-        await this.cacheManager.set(this.cacheKey, mostCommiter, 60);
 
-        interaction.reply(this.successResponse(mostCommiter));
+        return mostCommiter;
     }
 
     async getGithubEventOfUser(githubId: string) {
@@ -89,7 +100,9 @@ export class RankReply implements InteractionReply {
         }
     }
 
-    private successResponse(mostCommiter: string): string {
-        return `오늘 가장 많은 잔디를 심은 매쉬업 멤버는.. \`${mostCommiter}\` 입니다!!`;
+    private successResponse(mostCommiter: string): { content: string } {
+        return {
+            content: `오늘 가장 많은 잔디를 심은 매쉬업 멤버는.. \`${mostCommiter}\` 입니다!!`,
+        };
     }
 }
