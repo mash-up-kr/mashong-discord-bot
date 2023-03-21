@@ -1,0 +1,71 @@
+name: Deploy to Amazon ECS
+
+on:
+    push:
+        branches: [ecs-deploy]
+
+jobs:
+    deploy:
+        name: Deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check out the repo
+              uses: actions/checkout@v2
+
+            - name: Create env file
+              run: |
+                  touch .env
+                  echo NODE_ENV=prod >> .env
+                  echo PORT=${{secrets.PORT}} >> .env
+                  echo GH_TOKEN=${{secrets.GH_TOKEN}} >> .env
+                  echo DISCORD_TOKEN=${{secrets.DISCORD_TOKEN}} >> .env
+                  echo MONGO_URI=${{secrets.MONGO_URI}} >> .env
+                  cat .env
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ap-northeast-2
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v1
+
+            - name: Build, tag, and push image to Amazon ECR
+              id: build-image
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  ECR_REPOSITORY: mashong-discord-bot-repository
+                  IMAGE_TAG: ${{ github.sha }}
+              # Build a docker container and
+              # push it to ECR so that it can be deployed to ECS.
+              run: |
+                  docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . 
+                  docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 
+                  echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+            - name: Download Task Definition Template
+              run: |
+                  aws ecs describe-task-definition \
+                    --task-definition mashong-discord-bot-task-definition \
+                    --query taskDefinition \
+                    > task-definition.json
+
+            - name: Fill in the new image ID in the Amazon ECS task definition
+              id: task-def
+              uses: aws-actions/amazon-ecs-render-task-definition@v1
+              with:
+                  task-definition: task-definition.json
+                  container-name: mashong-discord-bot-container
+                  image: ${{ steps.build-image.outputs.image }}
+
+            - name: Deploy Amazon ECS task definition
+              uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+              with:
+                  task-definition: ${{ steps.task-def.outputs.task-definition }}
+                  service: mashong-discord-bot-service
+                  cluster: mashong-discord-bot-cluster
+                  wait-for-service-stability: true
