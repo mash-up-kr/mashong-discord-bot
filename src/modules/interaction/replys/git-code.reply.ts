@@ -1,10 +1,10 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { Client, SlashCommandBuilder } from 'discord.js';
-import { DISCORD_CLIENT } from 'src/constant/discord';
+import { Injectable } from '@nestjs/common';
+import { SlashCommandBuilder } from 'discord.js';
 import { Octokit } from '@octokit/rest';
 import { InteractionReply } from './reply';
 import { Command } from 'src/decorator/command.decorator';
 import DiscordInteraction from 'src/domains/discord/interaction';
+import { ConfigService } from '@nestjs/config';
 
 @Command(
     new SlashCommandBuilder()
@@ -19,16 +19,18 @@ export class GitCodeReply implements InteractionReply {
     private readonly octokit: Octokit;
     dict = {};
 
-    constructor(@Inject(DISCORD_CLIENT) private readonly client: Client) {
+    constructor(private readonly configService: ConfigService) {
         this.octokit = new Octokit();
     }
 
-    async send(interaction: DiscordInteraction): Promise<any> {
+    async send(interaction: DiscordInteraction): Promise<void> {
         const id = interaction.options.getString('user-name');
+        await interaction.deferReply();
 
         const res = await this.octokit.request('GET /users/{id}/repos', {
             id: id,
             headers: {
+                Authorization: `token ${this.configService.get('githubToken')}`,
                 'X-GiHub-Api-Version': '2022-11-28',
             },
         });
@@ -37,6 +39,7 @@ export class GitCodeReply implements InteractionReply {
             const lan = await this.octokit.request('GET {url}', {
                 url: res.data[i].languages_url,
                 headers: {
+                    Authorization: `token ${this.configService.get('githubToken')}`,
                     'X-GiHub-Api-Version': '2022-11-28',
                 },
             });
@@ -59,6 +62,12 @@ export class GitCodeReply implements InteractionReply {
             return b[1] - a[1];
         });
 
-        return interaction.reply(`${id} ���� ���� ���� ����� ���� ${sortable[0].key} �Դϴ�.`);
+        if (!sortable[0][0]) {
+            await interaction.editReply(`\`${id}\` 님이 사용하신 언어가 없습니다.`);
+        } else {
+            await interaction.editReply(
+                `\`${id}\` 님이 가장 많이 사용한 언어는  \`${sortable[0][0]}\` 입니다 !`,
+            );
+        }
     }
 }
