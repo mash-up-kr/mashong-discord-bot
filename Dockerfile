@@ -4,7 +4,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 COPY . .
 ## project dependency install
-RUN npm install -g npm
+RUN npm install -g pm2
 RUN npm install
 RUN npm run build
 
@@ -13,4 +13,4 @@ WORKDIR /usr/src/app
 COPY --from=builder /app ./
 
 EXPOSE 3000
-CMD npm run start:prod
+CMD pm2 start dist/main
