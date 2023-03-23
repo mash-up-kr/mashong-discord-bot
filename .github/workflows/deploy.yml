@@ -12,6 +12,15 @@ jobs:
             - name: Checkout source code
               uses: actions/checkout@v2
 
+            - name: Create env file
+              run: |
+                  touch .env
+                  echo NODE_ENV=prod >> .env
+                  echo PORT=${{secrets.PORT}} >> .env
+                  echo GH_TOKEN=${{secrets.GH_TOKEN}} >> .env
+                  echo DISCORD_TOKEN=${{secrets.DISCORD_TOKEN}} >> .env
+                  echo MONGO_URI=${{secrets.MONGO_URI}} >> .env
+
             - name: Generate deployment package
               run: zip -r ${{ github.sha }}.zip . -x "*.git*" node_modules
 
