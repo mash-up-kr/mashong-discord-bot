@@ -1,15 +1,11 @@
 ## declare base image - node 16
-FROM node:18-alpine AS builder
-## make work directory and copy files
+FROM node:18-alpine
+
 WORKDIR /app
 COPY . .
-## project dependency install
+
 RUN npm install
 RUN npm run build
-
-FROM node:18-alpine
-WORKDIR /usr/src/app
-COPY --from=builder /app ./
 
 EXPOSE 3000
 CMD npm run start:prod
