@@ -47,12 +47,12 @@ jobs:
                   docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 
                   echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-            # - name: Download Task Definition Template
-            #   run: |
-            #       aws ecs describe-task-definition \
-            #         --task-definition mashong-discord-bot-task-definition \
-            #         --query taskDefinition \
-            #         > task-definition.json
+            - name: Download Task Definition Template
+              run: |
+                  aws ecs describe-task-definition \
+                    --task-definition mashong-discord-bot-task-definition \
+                    --query taskDefinition \
+                    > task-definition.json
 
             - name: Fill in the new image ID in the Amazon ECS task definition
               id: task-def
