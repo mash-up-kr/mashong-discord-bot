@@ -10,7 +10,6 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /usr/src/app
 COPY --from=builder /app ./
-RUN npm install pm2
 
 EXPOSE 3000
-CMD npx pm2 start dist/main.js
+CMD npm run start:prod
