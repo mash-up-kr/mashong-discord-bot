@@ -4,6 +4,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 COPY . .
 ## project dependency install
+RUN npm install -g npm
 RUN npm install
 RUN npm run build
 
