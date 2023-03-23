@@ -16,11 +16,11 @@ jobs:
             - name: Create env file
               run: |
                   touch .env
-                  echo NODE_ENV=prod > .env
-                  echo PORT=${{secrets.PORT}} > .env
-                  echo GH_TOKEN=${{secrets.GH_TOKEN}} > .env
-                  echo DISCORD_TOKEN=${{secrets.DISCORD_TOKEN}} > .env
-                  echo MONGO_URI=${{secrets.MONGO_URI}} > .env
+                  echo NODE_ENV=prod >> .env
+                  echo PORT=${{secrets.PORT}} >> .env
+                  echo GH_TOKEN=${{secrets.GH_TOKEN}} >> .env
+                  echo DISCORD_TOKEN=${{secrets.DISCORD_TOKEN}} >> .env
+                  echo MONGO_URI=${{secrets.MONGO_URI}} >> .env
                   cat .env
 
             - name: Configure AWS credentials
