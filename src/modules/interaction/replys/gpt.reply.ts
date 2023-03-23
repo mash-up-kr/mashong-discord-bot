@@ -3,26 +3,24 @@ import { Client, SlashCommandBuilder } from 'discord.js';
 import { DISCORD_CLIENT } from 'src/constant/discord';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { SetCommand } from 'src/decorator/command.decorator';
+import { Command } from 'src/decorator/command.decorator';
 import { InteractionReply } from './reply';
 import DiscordInteraction from 'src/domains/discord/interaction';
 
+@Command(
+    new SlashCommandBuilder()
+        .setName('gpt')
+        .setDescription('chatGpt Going On...')
+        .addStringOption((option) => {
+            return option.setName('msg').setDescription('Say what you want!').setRequired(true);
+        }),
+)
 @Injectable()
 export class GptReply implements InteractionReply {
     constructor(
         @Inject(DISCORD_CLIENT) private readonly client: Client,
         private readonly httpService: HttpService,
     ) {}
-
-    @SetCommand()
-    command() {
-        return new SlashCommandBuilder()
-            .setName('gpt')
-            .setDescription('chatGpt Going On...')
-            .addStringOption((option) => {
-                return option.setName('msg').setDescription('Say what you want!').setRequired(true);
-            });
-    }
 
     async send(interaction: DiscordInteraction) {
         const msg = interaction.options.getString('msg');

@@ -1,8 +1,14 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
+import { DiscoveryService, Reflector } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
-import { ChatInputCommandInteraction, Client, Collection, Message, Routes } from 'discord.js';
+import {
+    ChatInputCommandInteraction,
+    Client,
+    Collection,
+    Events,
+    Message,
+    Routes,
+} from 'discord.js';
 import { Model } from 'mongoose';
 import { DISCORD_CLIENT } from 'src/constant/discord';
 import { COMMAND } from 'src/decorator/command.decorator';
@@ -31,9 +37,7 @@ export class DiscordService implements OnModuleInit {
     constructor(
         @Inject(DISCORD_CLIENT) private readonly client: DiscordClient,
         private readonly discoveryService: DiscoveryService,
-        private readonly metadataScanner: MetadataScanner,
         private readonly reflector: Reflector,
-        private readonly configService: ConfigService,
         private readonly messageReplyFactory: MessageReplyFactory,
         private readonly interactionReplyFactory: InteractionReplyFactory,
 
@@ -41,11 +45,13 @@ export class DiscordService implements OnModuleInit {
         private discordMessageModel: Model<DiscordMessageDocument>,
         @InjectModel(DiscordInteractionModel.name)
         private discordInteractionModel: Model<DiscordInteractionDocument>,
-    ) { }
+    ) {}
 
     async onModuleInit() {
         /** 연결 이벤트 등록 */
-        this.client.on('ready', () => console.log(`${this.client.user.tag} 에 로그인됨`));
+        this.client.on(Events.ClientReady, () =>
+            console.log(`${this.client.user.tag} 에 로그인됨`),
+        );
 
         this.loadInteractionCommand();
         this.registerMessageHandler();
@@ -93,13 +99,8 @@ export class DiscordService implements OnModuleInit {
             .filter(({ instance }) => instance && Object.getPrototypeOf(instance))
             .map(({ instance }) => {
                 const prototype = Object.getPrototypeOf(instance);
-                const methods = this.metadataScanner.getAllMethodNames(prototype);
-
                 const command = this.reflector.get(COMMAND, prototype);
-                if (methods.includes('command') && command) {
-                    return command;
-                }
-                return null;
+                return command;
             })
             .filter((value) => value);
 

@@ -4,7 +4,7 @@ import { SlashCommandBuilder } from 'discord.js';
 import { readFileSync } from 'fs';
 
 import DiscordInteraction from 'src/domains/discord/interaction';
-import { SetCommand } from 'src/decorator/command.decorator';
+import { Command } from 'src/decorator/command.decorator';
 import { InteractionReply } from './reply';
 import { ConfigService } from '@nestjs/config';
 import { Time } from 'src/common/time';
@@ -21,6 +21,7 @@ type GithubEvent = {
     org: object;
 };
 
+@Command(new SlashCommandBuilder().setName('rank').setDescription('Mash-Up Github Jandi Ranking'))
 @Injectable()
 export class RankReply implements InteractionReply {
     cacheKey = 'MOST_COMMITER';
@@ -29,13 +30,6 @@ export class RankReply implements InteractionReply {
         private readonly configService: ConfigService,
         @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     ) {}
-
-    @SetCommand()
-    command() {
-        return new SlashCommandBuilder()
-            .setName('rank')
-            .setDescription('Mash-Up Github Jandi Ranking');
-    }
 
     async send(interaction: DiscordInteraction) {
         const cachedResult = await this.cacheManager.get<string>(this.cacheKey);
