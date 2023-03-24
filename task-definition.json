@@ -1,0 +1,53 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:774654182296:task-definition/mashong-discord-bot-task-definition:13",
+    "containerDefinitions": [
+        {
+            "name": "mashong-discord-bot-container",
+            "image": "774654182296.dkr.ecr.ap-northeast-2.amazonaws.com/mashong-discord-bot-repository:d30bf7e362b8e387d310e7094cbfff9131cf3fa8",
+            "cpu": 512,
+            "memory": 512,
+            "memoryReservation": 491,
+            "portMappings": [
+                {
+                    "containerPort": 3000,
+                    "hostPort": 80,
+                    "protocol": "tcp",
+                    "name": "mashong-discord-bot-container-3000-tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": []
+        }
+    ],
+    "family": "mashong-discord-bot-task-definition",
+    "executionRoleArn": "arn:aws:iam::774654182296:role/ecsTaskExecutionRole",
+    "networkMode": "bridge",
+    "revision": 8,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": ["EC2"],
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "requiresCompatibilities": ["EC2"],
+    "cpu": "512",
+    "memory": "491",
+    "registeredAt": "2023-03-22T13:26:27.010000+09:00",
+    "registeredBy": "arn:aws:iam::774654182296:root"
+}
