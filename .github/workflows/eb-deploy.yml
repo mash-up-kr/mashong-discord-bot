@@ -3,7 +3,7 @@ name: eb-deploy
 on:
     push:
         branches:
-            - 'ecs-deploy'
+            - 'main'
 
 jobs:
     deploy:
