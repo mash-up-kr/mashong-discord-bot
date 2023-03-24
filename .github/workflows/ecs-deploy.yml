@@ -5,8 +5,8 @@ on:
         branches: [ecs-deploy]
 
 jobs:
-    deploy:
-        name: Deploy
+    ecs-deploy:
+        name: ECS Deploy
         runs-on: ubuntu-latest
 
         steps:
