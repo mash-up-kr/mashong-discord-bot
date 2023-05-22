@@ -5,10 +5,10 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 export class ScheduleService {
     private readonly logger = new Logger(ScheduleService.name);
 
-    @Cron(CronExpression.EVERY_5_SECONDS, {
-        name: 'common',
-    })
-    handleCron() {
-        this.logger.debug('Called when the current second is 5');
-    }
+    // @Cron(CronExpression.EVERY_5_SECONDS, {
+    //     name: 'common',
+    // })
+    // handleCron() {
+    //     this.logger.debug('Called when the current second is 5');
+    // }
 }
